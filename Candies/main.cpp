@@ -20,7 +20,7 @@ int main() {
         kids.push_back(kid);
     }
 
-    vector<int> candies(kids.size(), 1);
+    vector<long long> candies(kids.size(), 1);
 
     for (int i = 1; i < candies.size(); i++) {
         if (kids[i] > kids[i - 1])
@@ -35,12 +35,12 @@ int main() {
         }
     }
 
-    int sum = 0;
-    for (int candy : candies) {
+    long long sum = 0;
+    for (long long candy : candies) {
 
         sum += candy;
     }
-    cout << sum;
+    cout << sum << endl;
 
     return 0;
 }
