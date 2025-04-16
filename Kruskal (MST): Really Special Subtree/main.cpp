@@ -12,6 +12,7 @@ using namespace std;
 
 int main()
 {
+    // chyba nie o ten algorytm chodzilo
 
     int n, m, start;
     cin >> n >> m;

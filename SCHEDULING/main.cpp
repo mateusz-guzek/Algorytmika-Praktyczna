@@ -11,37 +11,17 @@ using namespace std;
 
 int main() {
 
-    long long n, tasks_amount, seconds = 0;
+    int n, tasks_amount, seconds = 0;
     cin >> n;
     tasks_amount = n;
-    vector<pair<long long, long long>> tasks{};
+    vector<int> tasks{};
 
     while (n--)
     {
-        long long input;
+        int input;
         cin >> input;
-        tasks.push_back(make_pair(input, 0));
+        tasks.push_back(input);
     }
-    while (true) {
-        bool allFinished = true;
-        for (auto& task : tasks) {
-            if (task.first > 0) {
-                task.first--;
-                seconds++;
-                task.second = seconds;
-                allFinished = false;
-            }
-
-        }
-
-        if (allFinished) break;
-    }
-    for (auto& task : tasks) {
-        cout << task.second << endl;
-
-    }
-
-
 
     return 0;
 }

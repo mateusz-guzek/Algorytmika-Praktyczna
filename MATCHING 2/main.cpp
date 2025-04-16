@@ -15,15 +15,13 @@ int main() {
 
     int N, M, P;
     cin >> N >> M >> P;
-    vector<int> bulls(M);
-    vector<int> cows(N);
-    while (P--)
-    {
+    vector<vector<int>> edges(N);
+    while (P--) {
         int cow, bull;
         cin >> cow >> bull;
-        cows[cow] = bull;
-        bulls[bull] = cow;
+        edges[cow].push_back(bull);
     }
+    
 
     return 0;
 }
