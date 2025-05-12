@@ -20,11 +20,11 @@ ll Closest2Power(ll n)
     return l;
 }
 
-void updateTree(vector<ll> &tree, const ll number, ll index)
+void updateTree(vector<ll> &tree, ll number, ll index)
 {
 
     tree[index] = number;
-    while (index != 0)
+    while (index > 0)
     {
         ll parent = (index - 1) / 2;
         ll left = 2 * parent + 1;
@@ -35,19 +35,12 @@ void updateTree(vector<ll> &tree, const ll number, ll index)
     }
 }
 
-ll getMaxBetween(const vector<ll> &tree, const ll a, const ll b)
+ll getMaxBetween(const vector<ll> &tree, ll a, ll b)
 {
+    
+        return 0;
+    
 
-    ll parentA = (a - 1) / 2;
-    ll parentB = (b - 1) / 2;
-    while (parentA != parentB)
-    {
-        // cout << parentA << " " << parentB << endl;
-        parentA = (parentA - 1) / 2;
-        parentB = (parentB - 1) / 2;
-    }
-
-    return tree[parentA];
 }
 
 int main()
@@ -71,8 +64,11 @@ int main()
         }
         else
         {
-            cout << getMaxBetween(tree, leafStart + a, leafStart + b) << endl;
+            cout << getMaxBetween(tree, leafStart + a, leafStart + b - 1) << endl;
         }
+    }
+    for(auto x : tree) {
+        cout << x << ",";
     }
 
     return 0;
