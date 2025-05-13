@@ -10,54 +10,91 @@
 
 using namespace std;
 
+class DSU
+{
+    vector<int> parent, rank;
+
+public:
+    DSU(int n)
+    {
+        parent.resize(n);
+        rank.resize(n);
+        for (int i = 0; i < n; i++)
+        {
+            parent[i] = i;
+            rank[i] = 1;
+        }
+    }
+    int find(int i)
+    {
+        if (parent[i] != i)
+        {
+            parent[i] = find(parent[i]);
+        }
+        return parent[i];
+    }
+
+    void unite(int x, int y)
+    {
+        int a = find(x);
+        int b = find(y);
+        if (a != b)
+        {
+            if (rank[a] < rank[b])
+            {
+                parent[a] = b;
+            }
+            else if (rank[a] > rank[b])
+            {
+                parent[b] = a;
+            }
+            else
+            {
+                parent[b] = a;
+                rank[a]++;
+            }
+        }
+    }
+};
+
+int kruskal(int vertices, vector<tuple<int,int,int>> &edges) {
+    sort(edges.begin(), edges.end());
+
+    DSU dsu(vertices);
+
+    int cost = 0;
+    int count = 0;
+
+    for(auto &e : edges) {
+        int weight = get<0>(e);
+        int from = get<1>(e);
+        int to = get<2>(e);
+
+        if(dsu.find(from) != dsu.find(to)) {
+            dsu.unite(from, to);
+            cost += weight;
+            if(++count == vertices - 1) break;
+        }
+    }
+    return cost;
+}
+
 int main()
 {
-    // chyba nie o ten algorytm chodzilo
 
-    int n, m, start;
+    int n, m;
     cin >> n >> m;
-    vector<vector<pair<int, int>>> graph(n + 1);
+    vector<tuple<int,int,int>> edges{};
 
+    // tuple<weight, from, to>
     for (int i = 0; i < m; i++)
     {
         int u, v, w;
         cin >> u >> v >> w;
-        graph[u].push_back({v,w});
-        graph[v].push_back({u,w});
-    }
-    cin >> start;
-
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> Q;
-    vector<bool> visited(n + 1, false);
-    int output = 0;
-
-
-    // w kolejce waga to x.first a node to x.second
-    Q.push({0, start});
-
-    while (!Q.empty())
-    {
-        auto vertex = Q.top();
-        Q.pop();
-
-        int neighbor = vertex.second;
-        int weight = vertex.first;
-
-        if (visited[neighbor]) continue;
-
-        output += weight;
-        visited[neighbor] = true;
-
-        for (auto nnbor : graph[neighbor])
-        {
-            if (!visited[nnbor.first])
-            {
-                Q.push({nnbor.second, nnbor.first});
-            }
-        }
+        edges.push_back({w, u-1, v-1});
     }
 
-    cout << output << endl;
+    cout << kruskal(n, edges);
 
     return 0;
 }
