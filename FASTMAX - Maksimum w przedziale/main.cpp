@@ -12,47 +12,70 @@ using namespace std;
 
 const ll LL_MIN = numeric_limits<ll>::min();
 
-ll Closest2Power(ll n)
-{
-    ll l = 1;
-    while (l < n)
-        l *= 2;
-    return l;
-}
-
-void updateTree(vector<ll> &tree, ll number, ll index)
+class Fastmax
 {
 
-    tree[index] = number;
-    while (index > 0)
+private:
+    ll base;
+    vector<ll> array;
+
+    ll closest2power(ll n)
     {
-        ll parent = (index - 1) / 2;
-        ll left = 2 * parent + 1;
-        ll right = 2 * parent + 2;
-        tree[parent] = max(tree[left], tree[right]);
-
-        index = parent;
+        ll l = 1;
+        while (l < n)
+            l *= 2;
+        return l;
     }
-}
 
-ll getMaxBetween(const vector<ll> &tree, ll a, ll b)
-{
-    
-        return 0;
-    
+public:
+    Fastmax(int n)
+    {
+        base = closest2power(n);
+        array.resize(10000000, 0);
+    }
 
-}
+    void update(ll n, ll i)
+    {
+
+        i += base;
+        array[i] = n;
+        while (i != 1)
+        {
+            i /= 2;
+            array[i] = max(array[i * 2], array[i * 2 + 1]);
+        }
+    }
+
+    ll query(int left, int right)
+    {
+        left += base;
+        right += base;
+
+        ll ml = array[left];
+        ll mr = array[right];
+
+        while (left / 2 != right / 2)
+        {
+            if (left % 2 == 0)
+                ml = max(ml, array[left + 1]);
+            if (right % 2 == 1)
+                mr = max(mr, array[right - 1]);
+
+            left /= 2;
+            right /= 2;
+        }
+        return max(ml, mr);
+    }
+
+
+};
 
 int main()
 {
 
     ll N, R;
     cin >> N >> R;
-    ll leafCount = Closest2Power(N);
-    ll treeSize = 2 * leafCount - 1;
-    ll leafStart = leafCount - 1;
-
-    vector<ll> tree(treeSize, LL_MIN);
+    Fastmax fmax(N);
 
     while (R--)
     {
@@ -60,15 +83,12 @@ int main()
         cin >> q >> a >> b;
         if (q == 1)
         {
-            updateTree(tree, b, leafStart + a);
+            fmax.update(b, a);
         }
         else
         {
-            cout << getMaxBetween(tree, leafStart + a, leafStart + b - 1) << endl;
+            cout << fmax.query(a, b) << endl;
         }
-    }
-    for(auto x : tree) {
-        cout << x << ",";
     }
 
     return 0;
