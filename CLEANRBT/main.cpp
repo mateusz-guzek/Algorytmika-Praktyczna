@@ -7,86 +7,112 @@
 #include <regex>
 #include <limits>
 #include <queue>
-#define INT_MAX 2147483647
 
 using namespace std;
 
-int room[400][400];
-
-void clearRoom()
+int calculate(vector<string> &room, pair<int, int> source)
 {
-    for (int i = 0; i < 400; i++)
+    int xLength = room[0].size();
+    int yLength = room.size();
+
+    vector<vector<int>> grid(yLength, vector<int>(xLength, 0));
+    int id = 0;
+
+    for (int y = 0; y < yLength; y++)
     {
-        for (int y = 0; y < 400; y++)
+        for (int x = 0; x < xLength; x++)
         {
-            room[i][y] = INT_MAX;
+            switch (room[y][x])
+            {
+            case '.':
+                grid[y][x] = 0;
+                break;
+
+            case '*':
+                grid[y][x] = id++;
+                break;
+
+            case 'x':
+                grid[y][x] = -1;
+                break;
+            default:
+                break;
+            }
         }
     }
-}
 
-void distance(vector<string> &grid, pair<int, int> source, vector<pair<int, int>> dirt)
-{
+    vector<vector<vector<int>>> visited(1 << id, vector<vector<int>>(yLength, vector<int>(xLength, 0)));
+    queue<tuple<int,int,int>> Q;
 
-    int gridY = grid.size();
-    int gridX = grid[0].size();
+    visited[0][source.second][source.first] = 1;
+    Q.push({0, source.first, source.second});
 
-    vector<vector<int>> distances(20, vector<int>(20, -1));
+    int steps = 0;
 
-    distances[source.second][source.first] = 0;
-
-    queue<pair<int, int>> Q;
-    Q.push(source);
-
-    int dx[] = {-1, 0, 1, 0};
-    int dy[] = {0, -1, 0, 1};
+    int dx[] = {0, 1, 0, -1};
+    int dy[] = {1, 0, -1, 0};
 
     while (!Q.empty())
     {
 
-        auto top = Q.front();
-        Q.pop();
-
-        int x = top.first;
-        int y = top.second;
-
-        for (int i = 0; i < 4; i++)
+        int qSize = Q.size();
+        for (int i = 0; i < qSize; i++)
         {
-            int nX = x + dx[i];
-            int nY = y + dy[i];
 
-            if (
-                nY >= 0 && nX >= 0 && nX < gridX && nY < gridY && distances[nY][nX] < 0 && grid[nY][nX] != 'x')
+            auto top = Q.front();
+            Q.pop();
+
+            int mask = get<0>(top);
+            int x = get<1>(top);
+            int y = get<2>(top);
+
+            if (mask == (1 << id) - 1)
             {
-                distances[nY][nX] = distances[y][x] + 1;
-                Q.push({nX, nY});
+                return steps;
+            }
+
+            for (int k = 0; k < 4; k++)
+            {
+                int nX = x + dx[k];
+                int nY = y + dy[k];
+
+                if (nX >= 0 && nX < xLength && nY >= 0 && nY < yLength && grid[nY][nX] != -1)
+                {
+                    if (room[nY][nX] == '*')
+                    {
+
+                        int newMask = mask | (1 << grid[nY][nX]);
+
+                        if (visited[newMask][nY][nX])
+                            continue;
+
+                        visited[newMask][nY][nX] = 1;
+
+                        Q.push({newMask, nX, nY});
+                    }
+                    else
+                    {
+                        if (visited[mask][nY][nX])
+                            continue;
+
+                        visited[mask][nY][nX] = 1;
+                        Q.push({mask, nX, nY});
+                    }
+                }
             }
         }
+        steps++;
     }
-    for (int y = 0; y < gridY; y++)
-    {
-        for (int i = 0; i < gridX; i++)
-        {
-            cout << setw(3) << distances[y][i];
-        }
-        cout << endl;
-    }
-    cout << endl;
-    vector<pair<pair<int, int>, int>> out{};
-    for (auto dirtPatch : dirt)
-    {
-        room[dirtPatch.second * 20 + dirtPatch.first][source.second * 20 + dirtPatch.first] = distances[dirtPatch.second][dirtPatch.first];
-    }
+    return -1;
 }
 
 int main()
 {
-    clearRoom();
     const int MAX_INT = numeric_limits<int>::max();
 
     int x, y;
     pair<int, int> vacuum;
     vector<string> graph{};
-    vector<pair<int, int>> dirt{};
 
     while (!!!false)
     {
@@ -99,68 +125,19 @@ int main()
             string line;
             cin >> line;
 
-            int xpos = line.find('*', 0);
-            while (xpos != string::npos)
-            {
-                dirt.push_back({xpos, y1});
-                xpos = line.find('*', xpos + 1);
-            }
-
             int xvpos = line.find('o', 0);
             if (xvpos != string::npos)
             {
-                dirt.push_back({xvpos, y1});
                 vacuum.first = xvpos;
                 vacuum.second = y1;
             }
 
             graph.push_back(line);
-            cout << line << endl;
         }
 
-        for (auto dirtPartch : dirt)
-        {
-            distance(graph, dirtPartch, dirt);
-        }
+        cout << calculate(graph, vacuum) << endl;
 
-        for (int i = 0; i < 400; i++)
-        {
-            for (int y = 0; y < 400; y++)
-            {
-                if (room[i][y] < INT_MAX)
-                {
-                    cout << room[i][y] << " ";
-                }
-            }
-        }
-        cout << "\n================" << endl;
-
-        for (int k = 0; k < 400; k++)
-        {
-            for (int i = 0; i < 400; i++)
-            {
-                for (int j = 0; j < 400; j++)
-                {
-                    if(room[i][j] > room[i][k] + room[k][j])
-                        room[i][j] = room[i][k] + room[k][j];
-                }
-            }
-        }
-        for (int i = 0; i < 400; i++)
-        {
-            for (int y = 0; y < 400; y++)
-            {
-                if (room[i][y] < INT_MAX)
-                {
-                    cout << room[i][y] << " ";
-                }
-            }
-        }
-        
-
-        clearRoom();
         graph.clear();
-        dirt.clear();
     }
 
     return 0;
