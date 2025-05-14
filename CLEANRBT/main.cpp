@@ -12,42 +12,38 @@ using namespace std;
 
 int calculate(vector<string> &room, pair<int, int> source)
 {
-    int xLength = room[0].size();
-    int yLength = room.size();
+    int width = room[0].size();
+    int height = room.size();
 
-    vector<vector<int>> grid(yLength, vector<int>(xLength, 0));
+    vector<vector<int>> grid(height, vector<int>(width, 0));
     int id = 0;
 
-    for (int y = 0; y < yLength; y++)
+    for (int y = 0; y < height; y++)
     {
-        for (int x = 0; x < xLength; x++)
+        for (int x = 0; x < width; x++)
         {
             switch (room[y][x])
             {
             case '.':
                 grid[y][x] = 0;
                 break;
-
             case '*':
                 grid[y][x] = id++;
                 break;
-
             case 'x':
                 grid[y][x] = -1;
-                break;
-            default:
                 break;
             }
         }
     }
 
-    vector<vector<vector<int>>> visited(1 << id, vector<vector<int>>(yLength, vector<int>(xLength, 0)));
-    queue<tuple<int,int,int>> Q;
+    vector<vector<vector<int>>> visited(1 << id, vector<vector<int>>(height, vector<int>(width, 0)));
+    queue<tuple<int, int, int>> Q;
 
     visited[0][source.second][source.first] = 1;
     Q.push({0, source.first, source.second});
 
-    int steps = 0;
+    int distance = 0;
 
     int dx[] = {0, 1, 0, -1};
     int dy[] = {1, 0, -1, 0};
@@ -68,7 +64,7 @@ int calculate(vector<string> &room, pair<int, int> source)
 
             if (mask == (1 << id) - 1)
             {
-                return steps;
+                return distance;
             }
 
             for (int k = 0; k < 4; k++)
@@ -76,7 +72,7 @@ int calculate(vector<string> &room, pair<int, int> source)
                 int nX = x + dx[k];
                 int nY = y + dy[k];
 
-                if (nX >= 0 && nX < xLength && nY >= 0 && nY < yLength && grid[nY][nX] != -1)
+                if (nX >= 0 && nX < width && nY >= 0 && nY < height && grid[nY][nX] != -1)
                 {
                     if (room[nY][nX] == '*')
                     {
@@ -101,15 +97,13 @@ int calculate(vector<string> &room, pair<int, int> source)
                 }
             }
         }
-        steps++;
+        distance++;
     }
     return -1;
 }
 
 int main()
 {
-    const int MAX_INT = numeric_limits<int>::max();
-
     int x, y;
     pair<int, int> vacuum;
     vector<string> graph{};
