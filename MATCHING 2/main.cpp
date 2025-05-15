@@ -8,111 +8,62 @@
 #include <limits>
 #include <set>
 #include <queue>
-#define FAKE_INF 2147483647
 
 using namespace std;
 
-int bfs(int s, int t, vector<int> &parent, vector<vector<int>> &graph, vector<vector<int>> &capacity)
+int N, M, P;
+vector<vector<int>> cows;
+vector<int> matching;
+vector<bool> used;
+
+bool dfs(int from)
 {
-    fill(parent.begin(), parent.end(), -1);
-    parent[s] = -2;
-    queue<pair<int, int>> Q;
-    Q.push({s, FAKE_INF});
-
-    while (!Q.empty())
+    if (used[from])
+        return false;
+    used[from] = true;
+    for (int to : cows[from])
     {
-        int node = Q.front().first;
-        int flow = Q.front().second;
-        Q.pop();
-
-        for (int next : graph[node])
+        if (matching[to] == -1 || dfs(matching[to]))
         {
-            if (parent[next] == -1 && capacity[node][next])
-            {
-                parent[next] = node;
-                int newFlow = min(flow, capacity[node][next]);
-                if (next == t)
-                    return newFlow;
-                Q.push({next, newFlow});
-            }
+            matching[to] = from;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
-int max_flow(int s, int t, vector<vector<int>> &graph, vector<vector<int>> &capacity)
-{
-    int flow = 0;
-    vector<int> parent(graph.size());
-    int newFlow;
-
-    newFlow = bfs(s, t, parent, graph, capacity);
-
-    while (newFlow)
-    {
-        flow += newFlow;
-        int current = t;
-        while (current != s)
-        {
-            int previous = parent[current];
-            capacity[previous][current] -= newFlow;
-            capacity[current][previous] += newFlow;
-            current = previous;
-        }
-
-        newFlow = bfs(s, t, parent, graph, capacity);
-    }
-
-    return flow;
-}
-
-// analogicznie do POTHOLE
-// graph 0-indexed
-// 0 = source
-// n = sink
-// edmonds-karp
 int main()
 {
 
     ios::sync_with_stdio(false);
     cin.tie(0);
 
-    int N, M, P;
     cin >> N >> M >> P;
 
-    int graphSize = N + M + 2;
-    int n = graphSize - 1;
-    int cow_offset = 1;
-    int bull_offset = N + 1;
-    vector<vector<int>> graph(graphSize);
-    vector<vector<int>> capacity(graphSize, vector<int>(graphSize, 0));
-
-    for (int i = 0; i < N; i++)
-    {
-        graph[0].push_back(cow_offset + i);
-        graph[cow_offset + i].push_back(0);
-        capacity[0][cow_offset + i] = 1;
-    }
-
-    for (int i = 0; i < M; i++)
-    {
-        graph[bull_offset + i].push_back(n);
-        graph[n].push_back(bull_offset + i);
-        capacity[bull_offset + i][n] = 1;
-    }
+    cows.resize(N);
 
     while (P--)
     {
         int cow, bull;
         cin >> cow >> bull;
-        cow--;
-        bull--;
 
-        graph[cow + cow_offset].push_back(bull + bull_offset);
-        graph[bull + bull_offset].push_back(cow + cow_offset);
-        capacity[cow + cow_offset][bull + bull_offset] = 1;
+        cows[--cow].push_back(--bull);
     }
 
-    cout << max_flow(0, n, graph, capacity) << endl;
+    matching.assign(M, -1);
+    for (int v = 0; v < N; v++)
+    {
+        used.assign(N, false);
+        dfs(v);
+    }
+
+    int a = 0;
+    for (auto m : matching)
+    {
+        if (m != -1)
+            a++;
+    }
+    cout << a << endl;
+
     return 0;
 }
